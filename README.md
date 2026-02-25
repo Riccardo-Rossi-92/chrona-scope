@@ -13,9 +13,12 @@ r.rossi@ing.uniroma2.it, riccardo.rossi.en@gmail.com
 
 
 Authors:  
-Michela Gelfusa, Andrea Murari, Riccardo Rossi, Matteo Scarcella
+Michela Gelfusa, Andrea Murari, Riccardo Rossi, Matteo Scarcella  
+  
 Contact:  
 Riccardo Rossi r.rossi@ing.uniroma2.it   
+
+
 Reference: Working in Progress
 
 
