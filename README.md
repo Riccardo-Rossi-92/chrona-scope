@@ -7,25 +7,12 @@ Riccardo Rossi
 "Tor Vergata" University of Rome, Via del Politecnico 1, Rome, Italy  
 r.rossi@ing.uniroma2.it, riccardo.rossi.en@gmail.com   
 
-## Correlation Dimension
+## Folder: pinn_ts_rec
+Contains the codes for the article titled "Physics-Informed Neural Networks for Time-Series Reconstruction and Modelling with Sparse and Indirect Measurements" submitted to **Nature Communications**. 
+Authors: Riccardo Rossi, Michela Gelfusa, Teddy Craciunescu, Novella Rutigliano, Pasquale Gaudio, Andrea Murari, JET contributors, WPTE team. 
+See the link: "in progress"
 
 
-
-
-Authors:  
-Michela Gelfusa, Andrea Murari, Riccardo Rossi, Matteo Scarcella  
-  
-Contact:  
-Riccardo Rossi r.rossi@ing.uniroma2.it   
-
-
-Reference: Working in Progress
-
-
-
-
-
-
-
-
+## Folder: correlation_dimension
+working in progress
 
