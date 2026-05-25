@@ -1,18 +1,22 @@
-function [gradients,Loss,Losses] = M01_ModelGradient_Lorenz_CaseA(parameters,Network,...
+function [gradients,Loss,Losses] = M01_ModelGradient_CaseB(parameters,Network,...
                                     dtp,dtm,dxm,dym,dzm,lambda,sx,sy,sz)
 
 
 %% Coefficients
 
 gamma = 2;
+% 
+% sigma = 10;
+% rho = 28;
+% beta = 8/3;
 
-sigma = 10;
-rho = 28;
-beta = 8/3;
+sigma = parameters.param.sigma;
+rho =  parameters.param.rho;
+beta = parameters.param.beta;
 
 %% Measurements
 
-X = Network_CaseA(dtm,1,parameters,Network);
+X = Network_CaseB(dtm,1,parameters,Network);
 
 dxp = X(1,:);
 dyp = X(2,:);
@@ -22,17 +26,22 @@ Z2x = ((dxp-dxm)/sx).^2;
 Z2y = ((dyp-dym)/sy).^2;
 Z2z = ((dzp-dzm)/sz).^2;
 
+% 
+% Lx = max(Z2x-1/4,0);
+% Ly = max(Z2y-1/4,0);
+% Lz = max(Z2z-1/4,0);
+
 Lx = Z2x.^(gamma+1)./(1+Z2x.^gamma);
 Ly = Z2y.^(gamma+1)./(1+Z2y.^gamma);
 Lz = Z2z.^(gamma+1)./(1+Z2z.^gamma);
 
-% Loss_meas = mean(Lx+Ly+Lz);
+Loss_meas = mean(Lx+Ly+Lz);
 % Loss_meas = mean(Lx+Ly);
-Loss_meas = mean(Lx);
+% Loss_meas = mean(Lx);
 
 %% Physics
 
-X = Network_CaseA(dtp,1,parameters,Network);
+X = Network_CaseB(dtp,1,parameters,Network);
 
 dxp = X(1,:);
 dyp = X(2,:);

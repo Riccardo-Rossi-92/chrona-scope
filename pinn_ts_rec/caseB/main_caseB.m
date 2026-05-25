@@ -106,14 +106,13 @@ Network.ScaleX = max(Measurements.x);
 Network.ScaleY = max(Measurements.y);
 Network.ScaleZ = max(Measurements.z);
 
-[X,parameters] = Network_CaseA(dtp(:,1),0,[],Network);
-X = Network_CaseA(dtp(1,1:1000),1,parameters,Network);
-
+[X,parameters] = Network_CaseB(dtp(:,1),0,[],Network);
+X = Network_CaseB(dtp(1,1:1000),1,parameters,Network);
 
 %% Model Gradient
 
 addpath("ModelGradients\")
-accfun = dlaccelerate(@M01_ModelGradient_CaseA);
+accfun = dlaccelerate(@M01_ModelGradient_CaseB);
 
 %% Training Options and Initialisation
 
@@ -161,7 +160,7 @@ for epoch = 1 : PINN.MaximumEpochs
 
     %%
 
-    X = Network_CaseA(dt_plot,1,parameters,Network);
+    X = Network_CaseB(dt_plot,1,parameters,Network);
     dxp = X(1,:);
     dyp = X(2,:);
     dzp = X(3,:);
@@ -236,5 +235,10 @@ for epoch = 1 : PINN.MaximumEpochs
     ylabel("Data")
 
     drawnow
+
+    disp("epoch: " + epoch)
+    disp("beta: " + double(extractdata(gather(parameters.param.beta))))
+    disp("rho: " + double(extractdata(gather(parameters.param.rho))))
+    disp("sigma: " + double(extractdata(gather(parameters.param.sigma))))
 
 end
