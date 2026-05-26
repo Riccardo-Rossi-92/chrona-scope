@@ -26,9 +26,9 @@ Lx = Z2x.^(gamma+1)./(1+Z2x.^gamma);
 Ly = Z2y.^(gamma+1)./(1+Z2y.^gamma);
 Lz = Z2z.^(gamma+1)./(1+Z2z.^gamma);
 
-% Loss_meas = mean(Lx+Ly+Lz);
+Loss_meas = mean(Lx+Ly+Lz);
 % Loss_meas = mean(Lx+Ly);
-Loss_meas = mean(Lx);
+% Loss_meas = mean(Lx);
 
 %% Physics
 

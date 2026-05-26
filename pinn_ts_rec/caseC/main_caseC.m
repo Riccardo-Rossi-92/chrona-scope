@@ -1,12 +1,30 @@
 %% Physics-Informed Neural Network for Time Series Reconstruction
-%
+
 % Reference
-% Title: 
-% Authors: 
-% Journal: 
-% 
-% Case C 
-% Description
+% Title: Physics-Informed Neural Networks for Time-Series Reconstruction 
+% and Modelling with Sparse and Indirect Measurements
+% Authors: R. Rossi (r.rossi@ing.uniroma2.it), M.Gelfusa, T. Craciunescu
+% N. Rutigliano, P. Gaudio, A. Murari, JET Contributors, WPTE Team
+% Journal: submitted to Nature Communications
+
+% Case C - Time-series reconstruction from indirect measurements
+
+% Description:
+%   Reconstruction of the full state of the Lorenz system (x, y, z) from
+%   sparse and noisy indirect measurements. None of the state variables is
+%   directly observable. Instead, two nonlinear combinations of the state
+%   are measured:
+%
+%       f(t) = x(t) + y(t)
+%       g(t) = x(t) * (1 + z(t)) / 50
+%
+%   The governing equations and all model parameters (sigma, rho, beta)
+%   are assumed to be known. The data-consistency loss is computed on the
+%   predicted observables f_p and g_p, obtained by applying the measurement
+%   model to the network outputs. The physics residual loss enforces the
+%   full Lorenz dynamics at the collocation points (Sobol sequence).
+%   To avoid degenerate zero solutions during early training, the physics
+%   weight is gradually ramped up via a warm-up schedule.
 
 %% 
 
@@ -240,10 +258,5 @@ for epoch = 1 : PINN.MaximumEpochs
     ylabel("Data")
 
     drawnow
-
-    disp("epoch: " + epoch)
-    disp("beta: " + double(extractdata(gather(parameters.param.beta))))
-    disp("rho: " + double(extractdata(gather(parameters.param.rho))))
-    disp("sigma: " + double(extractdata(gather(parameters.param.sigma))))
 
 end

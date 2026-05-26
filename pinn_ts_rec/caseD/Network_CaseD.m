@@ -1,6 +1,6 @@
 %% Net 01
 
-function [X,parameters] = Network_CaseB(X,Predict,parameters,Network)
+function [X,parameters] = Network_CaseD(X,Predict,parameters,Network)
 
 Layer = Network.Layer;
 
@@ -34,6 +34,15 @@ if Predict == 0
     parameters.scale.X = dlarray([Network.ScaleX; Network.ScaleY; Network.ScaleZ]); 
 
     X = X.*parameters.scale.X;
+
+    %% 
+
+    parameters.param.sigma = dlarray(10);
+    parameters.param.rho = dlarray(10);
+    parameters.param.beta = dlarray(10);
+    parameters.param.alpha1 = dlarray(10);
+    parameters.param.alpha2 = dlarray(10);
+    parameters.param.alpha3 = dlarray(10);
 
 else
 

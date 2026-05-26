@@ -1,6 +1,6 @@
 %% Net 01
 
-function [X,parameters] = Network_CaseB(X,Predict,parameters,Network)
+function [X,parameters] = Network_CaseE(X,Predict,parameters,Network)
 
 Layer = Network.Layer;
 
@@ -22,18 +22,30 @@ if Predict == 0
         parameters.("p"+i).bias = dlarray(zeros([Layer(i) 1]));
 
         X = fullyconnect(X,parameters.("p"+i).weights,parameters.("p"+i).bias);
-        X = tanh(X);
+        X = sigmoid(X).*X;
 
     end
 
-    parameters.output.weights = dlarray(randn([3 size(X,1)]))/3;
-    parameters.output.bias = dlarray(zeros([3 1]));
+    parameters.output.weights = dlarray(randn([5 size(X,1)]))/3;
+    parameters.output.bias = dlarray(zeros([5 1]));
 
     X = fullyconnect(X,parameters.output.weights,parameters.output.bias);
 
-    parameters.scale.X = dlarray([Network.ScaleX; Network.ScaleY; Network.ScaleZ]); 
+    parameters.scale.X = dlarray([Network.ScaleX; Network.ScaleY;...
+        Network.ScaleZ; Network.ScaleX; Network.ScaleY]); 
 
     X = X.*parameters.scale.X;
+
+    %% 
+
+    parameters.param.sigma = dlarray(1);
+    parameters.param.rho = dlarray(1);
+    parameters.param.beta = dlarray(1);
+
+    parameters.param.a = dlarray(1);
+    parameters.param.b = dlarray(1);
+    parameters.param.c = dlarray(1);
+    parameters.param.d = dlarray(1);
 
 else
 
@@ -41,11 +53,12 @@ else
 
     for i = 1 : length(Layer)
         X = fullyconnect(X,parameters.("p"+i).weights,parameters.("p"+i).bias);
-        X = tanh(X);
+        X = sigmoid(X).*X;
     end
 
     X = fullyconnect(X,parameters.output.weights,parameters.output.bias);
 
+    X = X.*[1; 1; 1; 0; 0] + log(1+exp(X)).*[0; 0; 0; 1; 1];
     X = X.*parameters.scale.X;
 
 end

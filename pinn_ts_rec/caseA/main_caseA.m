@@ -1,12 +1,25 @@
 %% Physics-Informed Neural Network for Time Series Reconstruction
-%
+
 % Reference
-% Title: 
-% Authors: 
-% Journal: 
-% 
-% Case A 
-% Description
+% Title: Physics-Informed Neural Networks for Time-Series Reconstruction 
+% and Modelling with Sparse and Indirect Measurements
+% Authors: R. Rossi (r.rossi@ing.uniroma2.it), M.Gelfusa, T. Craciunescu
+% N. Rutigliano, P. Gaudio, A. Murari, JET Contributors, WPTE Team
+% Journal: submitted to Nature Communications
+
+% Case A - Time-series reconstruction from sparse direct measurements
+%
+% Description:
+%   Reconstruction of the full state of the Lorenz system (x, y, z) from
+%   sparse and noisy direct measurements of all three state variables.
+%   The governing equations and all model parameters (sigma, rho, beta)
+%   are assumed to be known. The PINN is trained by minimising a composite
+%   loss that combines a data-consistency term (weighted by measurement
+%   noise) and a physics residual term enforcing the Lorenz equations at
+%   a set of collocation points (Sobol sequence). The physics loss acts as
+%   a regulariser, suppressing noise-driven artefacts and enabling
+%   high-fidelity reconstruction well beyond the Nyquist limit imposed by
+%   the sparse sampling.
 
 %% 
 

@@ -7,20 +7,28 @@
 % N. Rutigliano, P. Gaudio, A. Murari, JET Contributors, WPTE Team
 % Journal: submitted to Nature Communications
 
-% Case B - Time-series reconstruction with hidden variables
-%
-% Description:
-%   Reconstruction of the full state of the Lorenz system (x, y, z) from
-%   sparse and noisy measurements of a single state variable x(t) only.
-%   The variables y(t) and z(t) are completely unobserved. The governing
-%   equations and all model parameters (sigma, rho, beta) are assumed to
-%   be known. The data-consistency loss is therefore computed exclusively
-%   on the x measurements, while the physics residual loss enforces the
-%   full Lorenz dynamics for all three state variables at the collocation
-%   points (Sobol sequence), effectively acting as the sole constraint on
-%   the hidden variables. The problem remains well posed because the number
-%   of physical constraints exceeds the number of unknown degrees of freedom.
+% Case D - Modelling and parameter identification with incomplete physics
+%          and indirect measurements
 
+% Description:
+%   Simultaneous reconstruction of the Lorenz system state (x, y, z) and
+%   identification of unknown model parameters from sparse and noisy
+%   indirect measurements. The state variables are not directly observable.
+%   Instead, two nonlinear combinations are measured:
+%
+%       f(t) = x(t) + y(t)
+%       g(t) = x(t) * (1 + z(t)^2) / 500
+%
+%   The mathematical structure of the Lorenz equations is assumed to be
+%   known, but the parameters sigma, rho, and beta are treated as unknown
+%   trainable scalars. To assess robustness against model misspecification,
+%   the equations are augmented with three additional spurious terms
+%   governed by parameters alpha1, alpha2, alpha3 (corresponding to
+%   gamma1, gamma2, gamma3 in the paper), which do not belong to the true
+%   Lorenz dynamics. The PINN is expected to drive these spurious
+%   parameters toward zero while correctly recovering the physical ones,
+%   demonstrating that the physics-informed loss acts as an effective
+%   regularisation mechanism against overfitting and model misspecification.
 %% 
 
 clear; clc;
@@ -63,8 +71,8 @@ Lorenz.z = X(:,3);
 
 %% Configuration
 
-Measurements.N = 60;
-Measurements.Noise = 0.5;
+Measurements.N = 30;
+Measurements.Noise = 0.1;
 
 sx = max(2*Measurements.Noise,0.1);
 sy = max(2*Measurements.Noise,0.1);
@@ -82,15 +90,19 @@ Measurements.z = interp1(Lorenz.t,Lorenz.z,Measurements.t);
 
 % Add Noise
 
-Measurements.x = normrnd(Measurements.x,Measurements.Noise);
-Measurements.y = normrnd(Measurements.y,Measurements.Noise);
-Measurements.z = normrnd(Measurements.z,Measurements.Noise);
+Measurements.f = Measurements.x + Measurements.y;
+Measurements.g = Measurements.x.*(1 + Measurements.z.^2)/500;
+Measurements.h = Measurements.y.*Measurements.z/1e1;
+
+Measurements.f = normrnd(Measurements.f,Measurements.Noise);
+Measurements.g = normrnd(Measurements.g,Measurements.Noise);
+Measurements.h = normrnd(Measurements.h,Measurements.Noise);
 
 % dlarray
 dtm = dlarray(Measurements.t,'CB');
-dxm = dlarray(Measurements.x,'CB');
-dym = dlarray(Measurements.y,'CB');
-dzm = dlarray(Measurements.z,'CB');
+dfm = dlarray(Measurements.f,'CB');
+dgm = dlarray(Measurements.g,'CB');
+dhm = dlarray(Measurements.h,'CB');
 
 %% Physics Grid
 
@@ -119,20 +131,20 @@ Network.ScaleX = max(Measurements.x);
 Network.ScaleY = max(Measurements.y);
 Network.ScaleZ = max(Measurements.z);
 
-[X,parameters] = Network_CaseB(dtp(:,1),0,[],Network);
-X = Network_CaseB(dtp(1,1:1000),1,parameters,Network);
+[X,parameters] = Network_CaseD(dtp(:,1),0,[],Network);
+X = Network_CaseD(dtp(1,1:1000),1,parameters,Network);
 
 
 %% Model Gradient
 
 addpath("ModelGradients\")
-accfun = dlaccelerate(@M01_ModelGradient_CaseB);
+accfun = dlaccelerate(@M01_ModelGradient_CaseD);
 
 %% Training Options and Initialisation
 
-PINN.lambda = 1e-4;
-PINN.LearningRate0 = 1e-3; 
-PINN.DecayRate0 = 1e-5;
+PINN.lambda = 1e-2;
+PINN.LearningRate0 = 2e-3; 
+PINN.DecayRate0 = 1e-4;
 
 iteration = 0;
 
@@ -143,6 +155,7 @@ averageSqGrad = [];
 
 figure(1)
 clf
+
 Loss_recorded = zeros(1,PINN.IterPerEpoch);
 
 for epoch = 1 : PINN.MaximumEpochs
@@ -157,7 +170,7 @@ for epoch = 1 : PINN.MaximumEpochs
 
         % Model Gradient
         [gradients,Loss,Losses] = dlfeval(accfun,parameters,Network,...
-                                    dtp(1,ind),dtm,dxm,PINN.lambda,...
+                                    dtp(1,ind),dtm,dfm,dgm,dhm,PINN.lambda,...
                                     sx,sy,sz);
         % Learning Rate Update
         LearningRate = PINN.LearningRate0./(1+PINN.DecayRate0*iteration);
@@ -174,7 +187,7 @@ for epoch = 1 : PINN.MaximumEpochs
 
     %%
 
-    X = Network_CaseB(dt_plot,1,parameters,Network);
+    X = Network_CaseD(dt_plot,1,parameters,Network);
     dxp = X(1,:);
     dyp = X(2,:);
     dzp = X(3,:);
@@ -197,7 +210,7 @@ for epoch = 1 : PINN.MaximumEpochs
     hold off
     plot(Lorenz.x,Lorenz.y,'b')
     hold on
-    plot(dxm,dym,'.k','MarkerSize',16)
+    % plot(dxm,dym,'.k','MarkerSize',16)
     plot(dxp,dyp,'r',"LineWidth",1.2)
     grid on
     grid minor
@@ -208,7 +221,7 @@ for epoch = 1 : PINN.MaximumEpochs
     hold off
     plot(Lorenz.x,Lorenz.z,'b')
     hold on
-    plot(dxm,dzm,'.k','MarkerSize',16)
+    % plot(dxm,dzm,'.k','MarkerSize',16)
     plot(dxp,dzp,'r',"LineWidth",1.2)
     grid on
     grid minor
@@ -219,7 +232,7 @@ for epoch = 1 : PINN.MaximumEpochs
     hold off
     plot(Lorenz.t,Lorenz.x,'b')
     hold on
-    plot(dtm,dxm,'.k','MarkerSize',16)
+    % plot(dtm,dxm,'.k','MarkerSize',16)
     plot(dt_plot,dxp,'r',"LineWidth",1.2)
     grid on
     grid minor
@@ -230,7 +243,7 @@ for epoch = 1 : PINN.MaximumEpochs
     hold off
     plot(Lorenz.t,Lorenz.y,'b')
     hold on
-    plot(dtm,dym,'.k','MarkerSize',16)
+    % plot(dtm,dym,'.k','MarkerSize',16)
     plot(dt_plot,dyp,'r','LineWidth',1.2)
     grid on
     grid minor
@@ -239,15 +252,22 @@ for epoch = 1 : PINN.MaximumEpochs
 
     subplot(2,3,6)
     hold off
-    plot(Lorenz.t,Lorenz.z,'b')
+    plot(Measurements.t,Measurements.f,'.b')
     hold on
-    plot(dtm,dzm,'.k','MarkerSize',16)
-    plot(dt_plot,dzp,'r','LineWidth',1.2)
+    plot(dt_plot,dxp+dyp,'r','LineWidth',1.2)
     grid on
     grid minor
     xlabel("time")
     ylabel("Data")
 
     drawnow
+
+    disp("epoch: " + epoch)
+    disp("beta: " + double(extractdata(gather(parameters.param.beta))))
+    disp("rho: " + double(extractdata(gather(parameters.param.rho))))
+    disp("sigma: " + double(extractdata(gather(parameters.param.sigma))))
+    disp("alpha1: " + double(extractdata(gather(parameters.param.alpha1))))
+    disp("alpha2: " + double(extractdata(gather(parameters.param.alpha2))))
+    disp("alpha3: " + double(extractdata(gather(parameters.param.alpha3))))
 
 end
